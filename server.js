@@ -1,30 +1,29 @@
-//import somethings
+// Import statements
 const express = require('express');
 const http = require("http");
 const session = require('express-session');
 const bcrypt = require('bcrypt');
-const bodyParser = require('body-parser');
 const db = require('./database');
-const { Server } = require("socket.io");
 
-//express setup
+// Express setup
 const app = express();
 const PORT = 3000;
-
-const room_list = [];
-
-//socket setup
 const server = http.createServer(app);
+const { Server } = require("socket.io");
 const io = new Server(server);
 
-app.set('view engine', 'ejs');
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static('public'));
+// Socket.io setup
+const room_list = [];
 
+// Set view engine and middleware
+app.set('view engine', 'ejs');
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static('public'));
 app.use(session({
     secret: 'secret_key',
     resave: false,
-    saveUninitialized: true
+    saveUninitialized: true,
+    cookie: { secure: false } // Disable `secure` in development (unless using HTTPS)
 }));
 
 // Middleware to check if user is logged in
@@ -34,6 +33,41 @@ const requireLogin = (req, res, next) => {
     }
     next();
 };
+
+// Socket.io connection event (Move this outside the route handler)
+io.on('connection', (socket) => {
+    console.log("A user connected", socket.id);
+    socket.on("rq_room", () => {
+        console.log('user is reqquesting room');
+        socket.emit("rq_room", room_list);
+    });
+
+    socket.on("joinRoom", (room, username) => {
+        socket.join(room);
+        console.log(`User joined room: ${room}`);
+        io.to(room).emit("user-connected", username);
+        socket.on("disconnect", () => {
+            socket.to(room).emit("user-disconnected", username);
+        });
+    });
+
+
+    socket.on("newroom", (newroom) => {
+        console.log(room_list);
+        if (room_list.includes(newroom)) {
+            console.log('room already exists');
+        }else{
+            room_list.push(newroom);
+            io.emit("room_list", room_list);
+            console.log(room_list);        }
+    });
+
+
+    // Handle disconnect event
+    socket.on('disconnect', () => {
+        console.log('user disconnected');
+    });
+});
 
 // Home Route
 app.get('/', (req, res) => {
@@ -93,6 +127,7 @@ app.get('/logout', (req, res) => {
     });
 });
 
+// Start server
 server.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
