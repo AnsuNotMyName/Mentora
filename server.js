@@ -12,8 +12,10 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
 
-// Socket.io setup
-const room_list = [];
+//null barible
+let room_list = [];
+let tempName = '';
+let tempRoom = '';
 
 // Set view engine and middleware
 app.set('view engine', 'ejs');
@@ -42,15 +44,20 @@ io.on('connection', (socket) => {
         socket.emit("rq_room", room_list);
     });
 
-    socket.on("joinRoom", (room, username) => {
+    socket.on('rqName', (username) => {
+        socket.emit('rqName', tempName);
+        console.log(`user ${tempName} is reqquesting name`);
+    });
+
+    socket.on("joinRoom", ({ room, username }) => {
         socket.join(room);
-        console.log(`User joined room: ${room}`);
+        tempRoom = room;
+        console.log(`User : ${username} is join room : ${room}`);
         io.to(room).emit("user-connected", username);
         socket.on("disconnect", () => {
             socket.to(room).emit("user-disconnected", username);
         });
     });
-
 
     socket.on("newroom", (newroom) => {
         console.log(room_list);
@@ -61,8 +68,6 @@ io.on('connection', (socket) => {
             io.emit("room_list", room_list);
             console.log(room_list);        }
     });
-
-
     // Handle disconnect event
     socket.on('disconnect', () => {
         console.log('user disconnected');
@@ -118,6 +123,11 @@ app.post('/register', (req, res) => {
 // Dashboard Page
 app.get('/dashboard', requireLogin, (req, res) => {
     res.render('dashboard', { username: req.session.user.username });
+    tempName = req.session.user.username;
+});
+
+app.get('/room', requireLogin, (req, res) => {
+    res.render('room',{ username: req.session.user.username , room: tempRoom });
 });
 
 // Logout
