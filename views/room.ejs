@@ -11,16 +11,7 @@
     <h3>yang mai sed</h3>
     <div id="local-stream"><h2>Local Stream</h2></div>
     <div id="remote-stream"><h2>Remote Stream</h2></div>
-<!--
-    <h2>Select a Room</h2>
-    <ul id="room-box">
-        <li></li><button id="room1" onclick="room_join('HOME')">HOME</button></li>
-    </ul>
-    <p style="color: red;" id="error-tell"></p>
-    <input type="text" name="addroomname" id="addroomname">
-    <button id="newRoom">NewRoom</button>
-    <button id="refresh_bt" onclick="refresh()">refresh</button>
--->
+
     <a href="/logout">Logout</a>
 
 
@@ -35,9 +26,13 @@
         const title = document.getElementById('title')
         title.innerHTML = (`Welcome ${currentName} to room ${currentRoom}`)
 
-        console.log(currentName);
-        console.log(currentRoom);
+
         const socket = io();
+        socket.emit("joinRoom", { room: currentRoom, username: currentName });
+
+        function sendMessage() {
+
+        }
     </script>
 </body>
 
