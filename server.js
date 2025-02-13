@@ -68,6 +68,11 @@ io.on('connection', (socket) => {
             io.emit("room_list", room_list);
             console.log(room_list);        }
     });
+
+    socket.on('message', ({ message, room, username }) => {
+        io.to(room).emit('message', { message, username });
+    })
+
     // Handle disconnect event
     socket.on('disconnect', () => {
         console.log('user disconnected');
@@ -126,8 +131,9 @@ app.get('/dashboard', requireLogin, (req, res) => {
     tempName = req.session.user.username;
 });
 
+//room page
 app.get('/room', requireLogin, (req, res) => {
-    res.render('room',{ username: req.session.user.username , room: tempRoom });
+    res.render('room',{ username: tempName , room: tempRoom });
 });
 
 // Logout

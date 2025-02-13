@@ -2,8 +2,8 @@
 <html lang="en">
 
 <head>
-    <title>Dashboard</title>
-    <link rel="stylesheet" href="styles.css">
+    <title><%= room %></title>
+    <link rel="stylesheet" href="/styles.css">
 </head>
 
 <body>
@@ -11,29 +11,17 @@
     <h3>yang mai sed</h3>
     <div id="local-stream"><h2>Local Stream</h2></div>
     <div id="remote-stream"><h2>Remote Stream</h2></div>
+    <div id="mainBox">
+        <div id="chatBox"></div>
+        <div id="messageInput">
+            <input id="message" placeholder="Enter your message" style="display: inline-block;" type="text">
+            <button id="sendBtn">Send</button>
+        </div>
+    </div>
 
     <a href="/logout">Logout</a>
-
-
-
-
-    <!--Script-->
     <script src="/socket.io/socket.io.js"></script>
-    <script>
-        let currentName = sessionStorage.getItem('userName');
-        let currentRoom = sessionStorage.getItem('currentRoom');
-
-        const title = document.getElementById('title')
-        title.innerHTML = (`Welcome ${currentName} to room ${currentRoom}`)
-
-
-        const socket = io();
-        socket.emit("joinRoom", { room: currentRoom, username: currentName });
-
-        function sendMessage() {
-
-        }
-    </script>
+    <script src="/room.js"></script>
 </body>
 
-</html>
+</html> 

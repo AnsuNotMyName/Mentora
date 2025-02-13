@@ -19,10 +19,6 @@ button {
     cursor: pointer;
 }
 
-body {
-    font-family: Arial, sans-serif;
-}
-
 /* Background overlay */
 .overlay {
     position: fixed;

@@ -64,8 +64,9 @@ function refresh() {
 function room_join(room_join) {
     sessionStorage.setItem('currentRoom', room_join);
     currentRoom = sessionStorage.getItem('currentRoom');
+    socket.emit("joinRoom", { room: room_join, username: currentName });
     console.log('user', currentName, 'joined room', room_join)
-    window.location = '/room'
+    window.location = '/room/';
     //create element that show room slelect
 
 }
