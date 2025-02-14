@@ -2,6 +2,9 @@
 
 const socket = io();
 
+let currentName = '';
+let currentRoom = '';
+
 document.getElementById("nwRoom").addEventListener("click", function () {
     document.getElementById("nwPopup").classList.add("show");
     document.querySelector(".overlay").classList.add("show");
@@ -15,17 +18,21 @@ document.getElementById("close").addEventListener("click", function () {
 const alert = document.getElementById('error-tell')
 
 sessionStorage.removeItem('currentRoom');
-currentName = sessionStorage.getItem('userName');
+//currentName = sessionStorage.getItem('userName');
 currentRoom = sessionStorage.getItem('currentRoom');
+currentName = sessionStorage.getItem('userName');
 
-console.log(currentName,currentRoom)
 
-socket.emit('rqName', '<%= username %>');
+
+/*
+socket.emit('rqName');
 socket.on('rqName', (username) => {
-    sessionStorage.setItem('userName', username);
+    sessionStorage.setItem('userName', '<%= username %>');
     currentName = sessionStorage.getItem('userName');
-    console.log(`already get name from server : ${username}`);
+    console.log(`already get name from server : ${currentName}`);
 });
+*/
+
 
 let newroom = document.getElementById("newRoom");
 const roomname = document.getElementById("addroomname");

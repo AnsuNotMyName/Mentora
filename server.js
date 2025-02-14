@@ -44,7 +44,7 @@ io.on('connection', (socket) => {
         socket.emit("rq_room", room_list);
     });
 
-    socket.on('rqName', (username) => {
+    socket.on('rqName', () => {
         socket.emit('rqName', tempName);
         console.log(`user ${tempName} is reqquesting name`);
     });
@@ -52,7 +52,7 @@ io.on('connection', (socket) => {
     socket.on("joinRoom", ({ room, username }) => {
         socket.join(room);
         tempRoom = room;
-        console.log(`User : ${username} is join room : ${room}`);
+        console.log(`User : ${username} is joining room : ${room}`);
         io.to(room).emit("user-connected", username);
         socket.on("disconnect", () => {
             socket.to(room).emit("user-disconnected", username);
@@ -128,12 +128,12 @@ app.post('/register', (req, res) => {
 // Dashboard Page
 app.get('/dashboard', requireLogin, (req, res) => {
     res.render('dashboard', { username: req.session.user.username });
-    tempName = req.session.user.username;
 });
 
 //room page
 app.get('/room', requireLogin, (req, res) => {
-    res.render('room',{ username: tempName , room: tempRoom });
+    res.render('room',{ username: req.session.user.username , room: tempRoom });
+    console.log(`user ${tempName} join room ${tempRoom}`);
 });
 
 // Logout

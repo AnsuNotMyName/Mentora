@@ -17,7 +17,6 @@
     <button id="refresh_bt" onclick="refresh()">refresh</button>
 
     <button id="nwRoom">Create New Room</button>
-    
 
     <div class="overlay"></div>
 
@@ -39,8 +38,7 @@
     <!--Script-->
     <script src="/socket.io/socket.io.js"></script>
     <script>
-
-
+        sessionStorage.setItem('userName', '<%= username %>');
     </script>
 
     <script src="dashboard.js"></script>
