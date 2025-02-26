@@ -1,0 +1,34 @@
+name: Deploy Webpage
+
+on:
+  push:
+    branches:
+      - main  # Trigger deployment when pushing to the main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout the repository
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js (if necessary for your site)
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'  # Replace with the version you need
+
+    - name: Install dependencies (if applicable)
+      run: |
+        npm install  # Use if you have a package.json for dependencies
+
+    - name: Build site (if necessary)
+      run: |
+        npm run build  # Replace with your build command if needed
+
+    - name: Deploy to GitHub Pages
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        branch: main  # The branch to deploy to
+        folder: views    # The folder to deploy
+        file-rename: login.ejs  # The custom file name to use as index
