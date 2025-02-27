@@ -18,7 +18,7 @@ let tempName = '';
 let tempRoom = '';
 
 // Set view engine and middleware
-app.set('view engine', 'ejs');
+app.set('view engine', 'ejs');-
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use(session({
@@ -54,8 +54,10 @@ io.on('connection', (socket) => {
         tempRoom = room;
         console.log(`User : ${username} is joining room : ${room}`);
         io.to(room).emit("user-connected", username);
+    
         socket.on("disconnect", () => {
             socket.to(room).emit("user-disconnected", username);
+            console.log(`User : ${username} is leaving room : ${room}`);
         });
     });
 
@@ -70,14 +72,29 @@ io.on('connection', (socket) => {
     });
 
     socket.on('message', ({ message, room, username }) => {
+        let roomId = room;
         io.to(room).emit('message', { message, username });
     })
 
-    // Handle disconnect event
-    socket.on('disconnect', () => {
-        console.log('user disconnected');
+
+    // WebRTC Signaling
+
+    socket.on('offer', ({ offer, room, username }) => {
+        io.to(room).emit('offer', { offer:offer, room:room, username:username });
+    })
+
+    socket.on('answer', ({ answer, room, username }) => {
+        io.to(room).emit('answer', { answer:answer, room:room, username:username });
+    })
+
+    socket.on('new-ice-candidate', ({ candidate, room, username }) => {
+        io.to(room).emit('new-ice-candidate', { candidate:candidate, room:room, username:username });
     });
+
 });
+
+
+
 
 // Home Route
 app.get('/', (req, res) => {

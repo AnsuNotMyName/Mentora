@@ -2,26 +2,162 @@
 <html lang="en">
 
 <head>
-    <title><%= room %></title>
+    <title>
+        <%= room %>
+    </title>
     <link rel="stylesheet" href="/styles.css">
 </head>
 
 <body>
     <h2 id="title">Welcome USER to room ROOM</h2>
     <h3>yang mai sed</h3>
-    <div id="local-stream"><h2>Local Stream</h2></div>
-    <div id="remote-stream"><h2>Remote Stream</h2></div>
+    <video muted id="localVideo" autoplay playsinline></video>
+    <video id="remoteVideo"></video>
+    <!--   <video id="remoteVideo" autoplay playsinline></video>   -->
     <div id="mainBox">
         <div id="chatBox"></div>
         <div id="messageInput">
             <input id="message" placeholder="Enter your message" style="display: inline-block;" type="text">
             <button id="sendBtn">Send</button>
+            <button id="sendOffer">sendOffer</button>
         </div>
     </div>
 
     <a href="/logout">Logout</a>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/room.js"></script>
+
+
+    <script>
+        const constraints = {
+            audio: true,
+            video: true
+        };
+
+        let localVideo;
+
+        const configuration = { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }] }
+        const peerConnection = new RTCPeerConnection(configuration);
+
+        const localVideoEl = document.getElementById('localVideo');
+        const remoteVideoEl = document.getElementById('remoteVideo');
+
+        const sendOfferBt = document.getElementById('sendOffer');
+
+        let isOffer = false;
+
+        async function GUM() {
+            localVideo = await navigator.mediaDevices.getUserMedia(constraints);
+            localVideoEl.srcObject = localVideo;
+
+            localVideo.getTracks().forEach(track => {
+                peerConnection.addTrack(track, localVideo);
+            });
+        }
+        GUM();
+
+        async function sendOffer() {
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+            socket.emit('offer', { offer: offer, room: currentRoom, username: currentName });
+        }
+
+        async function sendAnswer() {
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setRemoteDescription(answer);
+            socket.emit('answer', { answer: answer, room: currentRoom, username: currentName });
+        }
+
+        function addTrack() {
+            localVideo.getTracks().forEach(track => {
+                peerConnection.addTrack(track, localVideo);
+            });
+        }
+
+        function RUN() {
+            if (isOffer === false) {
+                sendOffer()
+                isOffer = true
+            } else {
+                socket.on('answer', async ({ answer, room, username }) => {
+                    await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+                });
+                isOffer = false
+            }
+
+            socket.on('offer', async ({ offer, room, username }) => {
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+            })
+
+
+
+            /*
+                    async function sendOffer() {
+                        localVideo = await navigator.mediaDevices.getUserMedia(constraints)
+                        //localVideoEl.srcObject = localVideo;
+                        const offer = await peerConnection.createOffer();
+                        await peerConnection.setLocalDescription(offer);
+                        localVideo.getTracks().forEach(track => {
+                            peerConnection.addTrack(track, localVideo);
+                        });
+                        socket.emit('offer', { offer: offer, room: currentRoom, username: currentName });
+                    };
+            
+                    sendOfferBt.addEventListener('click', sendOffer);
+            
+                    //get offer and send back
+                    socket.on('offer', async ({ offer, room, username }) => {
+                        if (username !== currentName){
+                            localVideo = await navigator.mediaDevices.getUserMedia(constraints)
+                            //localVideoEl.srcObject = localVideo;
+                            await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+                            console.log(offer)
+                            const answer = await peerConnection.createAnswer();
+                            await peerConnection.setLocalDescription(answer);
+                            socket.emit('answer', { answer: answer, room: room, username: currentName });
+                        }
+                    });
+                    */
+
+
+            // Listen for connectionstatechange on the local RTCPeerConnection
+            peerConnection.addEventListener('connectionstatechange', event => {
+                if (peerConnection.connectionState === 'connected') {
+                    console.log('connect succes')
+                }
+            });
+
+            // Listen for local ICE candidates on the local RTCPeerConnection
+            peerConnection.addEventListener('icecandidate', event => {
+                if (event.candidate) {
+                    socket.emit('new-ice-candidate', { candidate: event.candidate, room: currentRoom, username: currentName });
+                }
+            });
+
+            // Listen for remote ICE candidates and add them to the local RTCPeerConnection
+
+            socket.on('new-ice-candidate', async ({ candidate, room, username }) => {
+                if (candidate) {
+                    try {
+                        await peerConnection.addIceCandidate(candidate);
+                    } catch (e) {
+                        console.error('Error adding received ICE candidate', e);
+                    }
+                }
+            });
+
+            peerConnection.addEventListener('track', async (event) => {
+                const [remoteStream] = event.streams;
+                const remoteVideo = document.createElement('video');
+                remoteVideo.autoplay = true;
+                remoteVideo.playsInline = true;
+                remoteVideo.srcObject = remoteStream;
+                localVideoEl.srcObject = remoteStream;
+                document.getElementById('remoteVideo').appendChild(remoteVideo);
+            });
+
+
+    </script>
 </body>
 
-</html> 
+</html>

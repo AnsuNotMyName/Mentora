@@ -40,6 +40,8 @@ const roomname = document.getElementById("addroomname");
 let addroomname = roomname.value;
 let room_list_client = [];
 
+socket.emit('imName', currentName);
+
 function refresh() {
     socket.emit("rq_room");
 }
