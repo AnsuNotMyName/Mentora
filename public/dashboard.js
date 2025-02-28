@@ -19,7 +19,6 @@ const alert = document.getElementById('error-tell')
 
 sessionStorage.removeItem('currentRoom');
 //currentName = sessionStorage.getItem('userName');
-currentRoom = sessionStorage.getItem('currentRoom');
 currentName = sessionStorage.getItem('userName');
 
 
@@ -43,7 +42,7 @@ let room_list_client = [];
 socket.emit('imName', currentName);
 
 function refresh() {
-    socket.emit("rq_room");
+    socket.emit("rq_room", currentName);
 }
 
 //keyevent
@@ -71,11 +70,10 @@ function refresh() {
 }
 
 function room_join(room_join) {
-    sessionStorage.setItem('currentRoom', room_join);
-    currentRoom = sessionStorage.getItem('currentRoom');
+
     socket.emit("joinRoom", { room: room_join, username: currentName });
     console.log('user', currentName, 'joined room', room_join)
-    window.location = '/room/';
+    window.location = '/room/' + room_join;
     //create element that show room slelect
 
 }

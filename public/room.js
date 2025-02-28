@@ -1,6 +1,5 @@
-
     let currentName = sessionStorage.getItem('userName');
-    let currentRoom = sessionStorage.getItem('currentRoom');
+    
 
     const message = document.getElementById('message');
     const sendBtn = document.getElementById('sendBtn');
@@ -13,6 +12,7 @@
     sendBtn.addEventListener('click', sendMessage)
 
     const title = document.getElementById('title')
+    
     title.innerHTML = (`Welcome ${currentName} to room ${currentRoom}`)
 
     const socket = io();

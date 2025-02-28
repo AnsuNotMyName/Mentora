@@ -79,17 +79,7 @@ io.on('connection', (socket) => {
 
     // WebRTC Signaling
 
-    socket.on('offer', ({ offer, room, username }) => {
-        io.to(room).emit('offer', { offer:offer, room:room, username:username });
-    })
-
-    socket.on('answer', ({ answer, room, username }) => {
-        io.to(room).emit('answer', { answer:answer, room:room, username:username });
-    })
-
-    socket.on('new-ice-candidate', ({ candidate, room, username }) => {
-        io.to(room).emit('new-ice-candidate', { candidate:candidate, room:room, username:username });
-    });
+    
 
 });
 
@@ -143,14 +133,22 @@ app.post('/register', (req, res) => {
 });
 
 // Dashboard Page
+
+
+
 app.get('/dashboard', requireLogin, (req, res) => {
     res.render('dashboard', { username: req.session.user.username });
 });
 
-//room page
-app.get('/room', requireLogin, (req, res) => {
-    res.render('room',{ username: req.session.user.username , room: tempRoom });
-    console.log(`user ${tempName} join room ${tempRoom}`);
+// Room Page
+
+app.get('/room/:room_join', requireLogin, (req, res) => {
+    if (room_list.includes(req.params.room_join)) {
+        res.render('room',{ username: req.session.user.username , room: req.params.room_join });
+        console.log(`user ${tempName} join room ${req.params.room_join}`);        
+    }else{
+        res.redirect('/dashboard');
+    }
 });
 
 // Logout
@@ -159,6 +157,15 @@ app.get('/logout', (req, res) => {
         res.redirect('/login');
     });
 });
+
+//catch wrong path
+app.get('/:room_join', requireLogin, (req, res) => {
+    if (room_list.includes(req.params.room_join)) {
+        res.redirect(`/room/${req.params.room_join}`);
+    } else {
+        res.redirect('/dashboard');
+    }
+    });
 
 // Start server
 server.listen(PORT, () => {
